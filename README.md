@@ -53,10 +53,11 @@ This is the last project toward Udacity Full Stack Web Developer Nanodegree. In 
     * On your local machine, read the generated public key
      `cat ~/.ssh/FILE-NAME.pub`
     * On your virtual machine
-     `$ su -grader
+   ```$ su -grader
       $ mkdir .ssh
       $ touch .ssh/authorized_keys
-      $ nano .ssh/authorized_keys`
+      $ nano .ssh/authorized_keys
+      ```
     * Copy the public key to this _authorized_keys_ file on the virtual machine and save
 3. Run `chmod 700 .ssh` and `chmod 644 .ssh/authorized_keys` on your virtual machine to change file permission
 4. Restart SSH: `$ sudo service ssh restart`
@@ -66,4 +67,156 @@ This is the last project toward Udacity Full Stack Web Developer Nanodegree. In 
 8. Restart SSH: `$ sudo service ssh restart`
 
 ## Configure the local timezone to UTC
+1. Run `$ sudo dpkg-reconfigure tzdata`
+2. Choose **None of the above** to set timezone to UTC
+
+## Install and configure Apache
+1. Install **Apache**: `$ sudo apt-get install apache2`
+2. Go to http://18.218.99.181/, if Apache is working correctly, a **Apache2 Ubuntu Default Page** will show up
+
+## Install and configure Python mod_wsgi
+1. Install the **mod_wsgi** package: `$ sudo apt-get install libapache2-mod-wsgi python-dev`
+2. Enable **mod_wsgi**: `$ sudo a2enmod wsgi`
+3. Restart **Apache**: `$ sudo service apache2 restart`
+4. Check if Python is installed: `$ python`
+
+## Install PostgreSQL
+1. Run `$ sudo apt-get install postgresql`
+2. Make sure PostgreSQL does not allow remote connections
+3. Open file: `$ sudo nano /etc/postgresql/9.5/main/pg_hba.conf`
+4. Check to make sure it looks like this:
+   ```
+   # Database administrative login by Unix domain socket
+   local   all             postgres                                peer
+
+   # TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+   # "local" is for Unix domain socket connections only
+   local   all             all                                     peer
+   # IPv4 local connections:
+   host    all             all             127.0.0.1/32            md5
+   # IPv6 local connections:
+   host    all             all             ::1/128                 md5
+   ```
+## Create new PostgreSQL user called **catalog**
+1. Switch to PostgreSQL defualt user **postgres**: `$ sudo su - postgres`
+2. Connect to PostgreSQL: `$ psql`
+3. Create user **catalog** with LOGIN role: `# CREATE ROLE catalog WITH PASSWORD 'password';`
+4. Allow user to create database tables: `# ALTER USER catalog CREATEDB;`
+5. Create database: `# CREATE DATABASE catalog WITH OWNER catalog;`
+6. Connect to database **catalog**: `# \c catalog`
+7. Revoke all the rights: `# REVOKE ALL ON SCHEMA public FROM public;`
+8. Grant access to **catalog**: `# GRANT ALL ON SCHEMA public TO catalog;`
+9. Exit psql: `\q`
+10.Exit user **postgres**: `exit`
+
+## Create new Linux user called **catalog** and new database
+1. Create a new Linux user: `$ sudo adduser catalog`
+2. Give **catalog** user sudo access:
+   * `$ sudo visudo`
+   * Add `$ catalog ALL=(ALL:ALL) ALL` under line `$ root ALL=(ALL:ALL) ALL`
+   * Save and exit the file
+3. Log in as **catalog**: `$ sudo su - catalog`
+4. Create database **catalog**: `createdb catalog`
+5. Exit user **catalog**: `exit`
+
+## Install git and clone catalog application from github
+1. Run `$ sudo apt-get install git`
+2. Create dictionary: `$ mkdir /var/www/catalog`
+3. CD to this directory: `$ cd /var/www/catalog`
+4. Clone the catalog app: `$ sudo git clone RELEVENT-URL catalog`
+5. Change the ownership: `$ sudo chown -R ubuntu:ubuntu catalog/`
+6. CD to `/var/www/catalog/catalog`
+7. Change file **application.py** to **__init__.py**: `$ mv application.py __init__.py`
+8. Change line `app.run(host='0.0.0.0', port=8000)` to `app.run()` in **__init__.py** file
+
+## Edit client_secrets.json file
+1. Create a new project on Google API Console and download `client_scretes.json` file
+2. Copy and paste contents of downloaded `client_scretes.json` to the file with same name under directory `/var/www/catalog/catalog/client_secrets.json`
+
+## Setup for deploying a Flask App on Ubuntu VPS
+1. Install pip: `$ sudo apt-get install python-pip`
+2. Install packages:
+```
+   $ sudo pip install httplib2
+   $ sudo pip install requests
+   $ sudo pip install --upgrade oauth2client
+   $ sudo pip install sqlalchemy
+   $ sudo pip install flask
+   $ sudo apt-get install libpq-dev
+   $ sudo pip install psycopg2
+   ```
+
+## Setup and enble a virtual host
+1. Create file: `$ sudo touch /etc/apache2/sites-available/catalog.conf`
+2. Add the following to the file:
+```
+   <VirtualHost *:80>
+		ServerName XX.XX.XX.XX
+		ServerAdmin admin@xx.xx.xx.xx
+		WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+		<Directory /var/www/catalog/catalog/>
+			Order allow,deny
+			Allow from all
+			Options -Indexes
+		</Directory>
+		Alias /static /var/www/catalog/catalog/static
+		<Directory /var/www/catalog/catalog/static/>
+			Order allow,deny
+			Allow from all
+			Options -Indexes
+		</Directory>
+		ErrorLog ${APACHE_LOG_DIR}/error.log
+		LogLevel warn
+		CustomLog ${APACHE_LOG_DIR}/access.log combined
+   </VirtualHost>
+   ```
+3. Run `$ sudo a2ensite catalog` to enable the virtual host
+4. Restart **Apache**: `$ sudo service apache2 reload`
+
+## Configure .wsgi file
+1. Create file: `$ sudo touch /var/www/catalog/catalog.wsgi`
+2. Add content below to this file and save:
+```
+   #!/usr/bin/python
+   import sys
+   import logging
+   logging.basicConfig(stream=sys.stderr)
+   sys.path.insert(0,"/var/www/nuevoMexico/")
+
+   from nuevoMexico import app as application
+   application.secret_key = 'super_secret_key'
+```
+3. Restart **Apache**: `$ sudo service apache2 reload`
+
+## Edit the database path
+1. Replace lines in `__init__.py`, `database_setup.py`, and `lotsofitems.py` with `engine = create_engine('postgresql://catalog:INSERT_PASSWORD_FOR_DATABASE_HERE@localhost/catalog')`
+
+## Disable defualt Apache page
+1. `$ sudo a2dissite 000-defualt.conf`
+2. Restart **Apache**: `$ sudo service apache2 reload`
+
+## Set up database schema
+1. Run `$ sudo python database_setup.py`
+2. Run `$ sudo python lotsofitems.py`
+3. Restart **Apache**: `$ sudo service apache2 reload`
+4. Now follow the link to http://18.218.99.181/  the application should be runing online
+5. If internal errors occur: check the [Apache error file](https://www.a2hosting.com/kb/developer-corner/apache-web-server/viewing-apache-log-files)
+
+## Sources
+1. [Amazon Lightsail Website](https://aws.amazon.com/lightsail/?p=tile)
+2. [Google API Concole](https://console.cloud.google.com/)
+3. [Udacity](https://www.udacity.com)
+4. [Apache](https://httpd.apache.org/docs/2.2/configuring.html)
+
+
+
+
+
+
+
+
+
+
+
 
