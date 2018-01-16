@@ -22,6 +22,7 @@ This is the last project toward Udacity Full Stack Web Developer Nanodegree. In 
 ## Update all currently installed packages
 1. Run `sudo apt-get update` to update packages
 2. Run `sudo apt-get upgrade` to install newest versions of packages
+3. Set for future updates: `sudo apt-get dist-upgrade`
 
 ##  Change the SSH port from 22 to 2200
 1. Run `$ sudo nano /etc/ssh/sshd_config` to open up the configuration file
@@ -36,10 +37,11 @@ This is the last project toward Udacity Full Stack Web Developer Nanodegree. In 
 4. Allow incoming TCP packets on port 2200 to allow SSH: `$ sudo ufw allow 2200/tcp`
 5. Allow incoming TCP packets on port 80 to allow www: `$ sudo ufw allow www`
 6. Allow incoming UDP packets on port 123 to allow NTP: `$ sudo ufw allow 123/udp`
-7. Enable firewall: `$ sudo ufw enable`
-8. Check out current firewall status: `$ sudo ufw status`
-9. Update the firewall configuration on Amazon Lightsail website under **Networking**. Delete default SSH port 22 and add **port 80, 123, 2200**
-10. Open up a new terminal and you can now ssh in via the new port 2200: `$ ssh -i ~/.ssh/lightsail_key.rsa ubuntu@18.218.99.181 -p 2200`
+7. Close port 22: `$ sudo ufw deny 22`
+8. Enable firewall: `$ sudo ufw enable`
+9. Check out current firewall status: `$ sudo ufw status`
+10. Update the firewall configuration on Amazon Lightsail website under **Networking**. Delete default SSH port 22 and add **port 80, 123, 2200**
+11. Open up a new terminal and you can now ssh in via the new port 2200: `$ ssh -i ~/.ssh/lightsail_key.rsa ubuntu@18.218.99.181 -p 2200`
 
 ## Create a new user account **grader** and give **grader** sudo access
 1. Create a new user account **grader**:`$ sudo adduser grader`
