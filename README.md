@@ -1,5 +1,7 @@
 # Linux-Server-Configuration-Udacity-Full-Stack-Nanodegree-Project
-This is the last project toward Udacity Full Stack Web Developer Nanodegree. In this project, the [Catalog Web Application](https://github.com/yiyupan/Catalog-App-Udacity-Full-Stack-Nanodegree) from project 3 will be hosted by a Ubuntu Linux server on an Amazon Lightsail instance. A series of instructions will be presented below. You can visit http://18.218.99.181/ for the website deployed.
+This is the last project toward Udacity Full Stack Web Developer Nanodegree. In this project, the [Catalog Web Application](https://github.com/yiyupan/Catalog-App-Udacity-Full-Stack-Nanodegree) from project 3 will be hosted by a Ubuntu Linux server on an Amazon Lightsail instance. A series of instructions will be presented below. You can visit http://18.218.99.181/ for the website deployed. 
+
+Above link is now unavailable because I have graduated from the nanodegree program.
 
 * Public IP address: 18.218.99.181
 * SSH port: 2200
